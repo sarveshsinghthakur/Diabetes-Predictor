@@ -1,0 +1,1 @@
+web: cd API/Backend && pip install -r ../../requirements_minimal.txt && uvicorn app:app --host 0.0.0.0 --port $PORT
