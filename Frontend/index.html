@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diabetes Prediction</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+        }
+        .container {
+            background: white; border-radius: 20px; padding: 40px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; width: 100%;
+        }
+        h1 { color: #333; text-align: center; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; 
+            border-radius: 10px; font-size: 16px; transition: border-color 0.3s;
+        }
+        input:focus { outline: none; border-color: #667eea; }
+        button {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px; font-size: 18px; 
+            font-weight: bold; cursor: pointer; margin-top: 20px; transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.02); }
+        #result {
+            margin-top: 25px; padding: 20px; border-radius: 10px; text-align: center;
+            display: none; font-size: 24px; font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diabetes Prediction</h1>
+        <p class="subtitle">Enter your details to predict diabetes</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Pregnancies</label>
+                <input type="number" id="Pregnancies" min="0" max="20" value="2">
+            </div>
+            <div class="form-group">
+                <label>Glucose (mg/dL)</label>
+                <input type="number" id="Glucose" min="1" max="300" value="120">
+            </div>
+            <div class="form-group">
+                <label>Blood Pressure (mmHg)</label>
+                <input type="number" id="BloodPressure" min="40" max="220" value="70">
+            </div>
+            <div class="form-group">
+                <label>Skin Thickness (mm)</label>
+                <input type="number" id="SkinThickness" min="0" max="100" value="20">
+            </div>
+            <div class="form-group">
+                <label>Insulin (mu U/ml)</label>
+                <input type="number" id="Insulin" min="0" max="1000" value="80">
+            </div>
+            <div class="form-group">
+                <label>BMI</label>
+                <input type="number" id="BMI" min="10" max="60" value="25.0" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Diabetes Pedigree Function</label>
+                <input type="number" id="DiabetesPedigreeFunction" min="0" max="2.5" value="0.5" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" id="Age" min="1" max="100" value="35">
+            </div>
+        </div>
+        <button onclick="predict()">Predict Diabetes</button>
+        <div id="result"></div>
+    </div>
+    <script>
+        async function predict() {
+            const data = {
+                Pregnancies: parseInt(document.getElementById('Pregnancies').value),
+                Glucose: parseFloat(document.getElementById('Glucose').value),
+                BloodPressure: parseFloat(document.getElementById('BloodPressure').value),
+                SkinThickness: parseFloat(document.getElementById('SkinThickness').value),
+                Insulin: parseFloat(document.getElementById('Insulin').value),
+                BMI: parseFloat(document.getElementById('BMI').value),
+                DiabetesPedigreeFunction: parseFloat(document.getElementById('DiabetesPedigreeFunction').value),
+                Age: parseInt(document.getElementById('Age').value)
+            };
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'none';
+            resultDiv.className = '';
+            resultDiv.innerHTML = 'Predicting...';
+            resultDiv.style.display = 'block';
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    resultDiv.className = result.prediction === 1 ? 'error' : 'success';
+                    resultDiv.innerHTML = result.prediction === 1 ? 'Positive (Diabetes)' : 'Negative (No Diabetes)';
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = 'Error: ' + (result.detail || 'Unknown error');
+                }
+            } catch (e) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = 'Error: Could not connect to server';
+            }
+        }
+    </script>
+</body>
+</html>
